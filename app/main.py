@@ -1,25 +1,68 @@
 # app/main.py
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, JSONResponse
 from app.routers import items, qa
+from app.config import logger
+import traceback
+from fastapi.middleware.cors import CORSMiddleware
 
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="My RDF + FastAPI Demo",
+        title="FastAPI + GraphDB + ChatGPT Demo",
         version="0.1.0",
-        description="A small example demonstrating CRUD with an RDF store."
+        description="Une application démontrant l'intégration de FastAPI, GraphDB, et ChatGPT."
     )
 
-    # Include Routers
+    # Configurer CORS
+    origins = [
+        "http://localhost:3000",
+        "*",
+    ]
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Monter le dossier static
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+    # Middleware de logging
+    @app.middleware("http")
+    async def log_requests(request: Request, call_next):
+        logger.info(f"Incoming request: {request.method} {request.url}")
+        try:
+            response = await call_next(request)
+            logger.info(f"Response status: {response.status_code}")
+            return response
+        except Exception as e:
+            logger.error(f"Unhandled exception: {e}")
+            logger.error(traceback.format_exc())
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "Internal Server Error"},
+            )
+
+    # Inclure les routeurs
     app.include_router(items.router)
     app.include_router(qa.router)
+    
+    # Endpoint pour la page d'accueil (optionnel)
+    @app.get("/", response_class=HTMLResponse)
+    def read_root():
+        with open("app/static/index.html") as f:
+            return f.read()
 
     return app
 
 
 app = create_app()
-
 
 if __name__ == "__main__":
     import uvicorn

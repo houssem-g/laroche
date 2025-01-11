@@ -1,7 +1,8 @@
 # app/database/rdf_client.py
 
 from SPARQLWrapper import SPARQLWrapper, JSON, POST, POSTDIRECTLY
-from app.config import settings
+from urllib.error import HTTPError, URLError
+from app.config import settings, logger
 
 
 class RDFClient:
@@ -12,6 +13,7 @@ class RDFClient:
     def __init__(self, endpoint_url_select: str = settings.GRAPHDB_URL_SELECT, endpoint_url_update: str = settings.GRAPHDB_URL_UPDATE):
         self.endpoint_url_select = endpoint_url_select
         self.endpoint_url_update = endpoint_url_update
+        self.logger = logger
 
     def create_data(self, subject: str, predicate: str, obj: str) -> bool:
         """
@@ -24,6 +26,7 @@ class RDFClient:
           ex:{subject} ex:{predicate} "{obj}" .
         }}
         """
+        self.logger.info(f"Executing SPARQL INSERT: {insert_query}")
         return self._update_query(insert_query)
 
     def read_data(self, subject: str):
@@ -37,7 +40,14 @@ class RDFClient:
           ex:{subject} ?p ?o .
         }}
         """
+        self.logger.info(f"Executing SPARQL SELECT: {select_query}")
         return self._select_query(select_query)
+
+    def select_query(self, query: str):
+        """
+        Perform a custom SELECT query and return the results.
+        """
+        return self._select_query(query)
 
     def delete_data(self, subject: str, predicate: str = None):
         """
@@ -58,6 +68,7 @@ class RDFClient:
               ex:{subject} ?p ?o .
             }}
             """
+        self.logger.info(f"Executing SPARQL DELETE: {delete_query}")
         return self._update_query(delete_query)
 
     def update_data(self, subject: str, old_predicate: str, new_predicate: str):
@@ -77,22 +88,28 @@ class RDFClient:
           ex:{subject} ex:{old_predicate} ?o .
         }}
         """
+        self.logger.info(f"Executing SPARQL UPDATE: {update_query}")
         return self._update_query(update_query)
 
     def _select_query(self, query: str):
         """
         Helper method to perform SPARQL SELECT queries.
         """
-        sparql = SPARQLWrapper(self.endpoint_url_select)
-        sparql.setQuery(query)
-        sparql.setReturnFormat(JSON)
-        sparql.addCustomHttpHeader("Accept", "application/sparql-results+json")
-        results = sparql.query().convert()
-        data = []
-        for binding in results["results"]["bindings"]:
-            row = {var: binding[var]["value"] for var in binding}
-            data.append(row)
-        return data
+        try:
+            sparql = SPARQLWrapper(self.endpoint_url_select)
+            sparql.setQuery(query)
+            sparql.setReturnFormat(JSON)
+            sparql.addCustomHttpHeader("Accept", "application/sparql-results+json")
+            results = sparql.query().convert()
+            data = []
+            for binding in results["results"]["bindings"]:
+                row = {var: binding[var]["value"] for var in binding}
+                data.append(row)
+            self.logger.info(f"SELECT query returned {len(data)} results.")
+            return data
+        except Exception as e:
+            self.logger.error(f"SPARQL SELECT Error: {e}")
+            return []
 
     def _update_query(self, query: str) -> bool:
         """
@@ -108,6 +125,13 @@ class RDFClient:
             sparql.query()
 
             return True
+
+        except HTTPError as e:
+            self.logger.error(f"HTTP Error during SPARQL Update: {e}")
+            return False
+        except URLError as e:
+            self.logger.error(f"URL Error during SPARQL Update: {e}")
+            return False
         except Exception as e:
-            print(f"SPARQL Update Error: {e}")
+            self.logger.error(f"Unexpected Error during SPARQL Update: {e}")
             return False

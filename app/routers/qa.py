@@ -17,12 +17,10 @@ class QARequest(BaseModel):
 
 @router.post("/")
 def ask_question(payload: QARequest):
-    user_query = payload.user_query
-
-    # 1. Extraire des données pertinentes de GraphDB
-    # Ici, vous pouvez définir comment extraire les données pertinentes
-    # Par exemple, utiliser des mots-clés pour créer une requête SPARQL
-    # Pour simplifier, utilisons une requête générique
+    user_query = payload.user_query.strip()
+    if not user_query:
+        raise HTTPException(status_code=400, detail="La requête ne peut pas être vide.")
+    
     sparql_query = f"""
     PREFIX ex: <http://localhost:7200/ex#>
     SELECT ?p ?o
@@ -34,14 +32,17 @@ def ask_question(payload: QARequest):
     }}
     LIMIT 50
     """
-    rdf_data = rdf_client._select_query(sparql_query)
+    rdf_data = rdf_client.select_query(sparql_query)
 
-    # 2. Formater les données pour ChatGPT
+    if not rdf_data:
+        raise HTTPException(status_code=404, detail="Aucune donnée trouvée pour la requête.")
+
+    # Formater les données pour ChatGPT
     formatted_data = "\n".join([f"{item['p']} : {item['o']}" for item in rdf_data])
 
     prompt = f"Voici quelques informations pertinentes :\n{formatted_data}\n\nQuestion de l'utilisateur : {user_query}\n\nRéponse :"
 
-    # 3. Générer une réponse avec ChatGPT
+    # Générer une réponse avec ChatGPT
     chatgpt_response = chatgpt_client.generate_response(prompt)
 
     return {"response": chatgpt_response}
