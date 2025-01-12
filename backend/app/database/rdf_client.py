@@ -10,9 +10,10 @@ class RDFClient:
     An OOP interface to interact with a GraphDB repository via SPARQL.
     """
 
-    def __init__(self, endpoint_url_select: str = settings.GRAPHDB_URL_SELECT, endpoint_url_update: str = settings.GRAPHDB_URL_UPDATE):
+    def __init__(self, endpoint_url_select: str = settings.GRAPHDB_URL_SELECT, endpoint_url_update: str = settings.GRAPHDB_URL_UPDATE, graphdb_url: str = settings.GRAPHDB_URL):
         self.endpoint_url_select = endpoint_url_select
         self.endpoint_url_update = endpoint_url_update
+        self.graphdb_url = graphdb_url
         self.logger = logger
 
     def create_data(self, subject: str, predicate: str, obj: str) -> bool:
@@ -21,7 +22,7 @@ class RDFClient:
         Returns True if successful, False otherwise.
         """
         insert_query = f"""
-        PREFIX ex: <http://localhost:7200/ex#>
+        PREFIX ex: <{self.graphdb_url}/ex#>
         INSERT DATA {{
           ex:{subject} ex:{predicate} "{obj}" .
         }}
@@ -34,7 +35,7 @@ class RDFClient:
         Simple read example: get all predicates and objects for a given subject.
         """
         select_query = f"""
-        PREFIX ex: <http://localhost:7200/ex#>
+        PREFIX ex: <{self.graphdb_url}/ex#>
         SELECT ?p ?o
         WHERE {{
           ex:{subject} ?p ?o .
@@ -56,14 +57,14 @@ class RDFClient:
         """
         if predicate:
             delete_query = f"""
-            PREFIX ex: <http://localhost:7200/ex#>
+            PREFIX ex: <{self.graphdb_url}/ex#>
             DELETE WHERE {{
               ex:{subject} ex:{predicate} ?o .
             }}
             """
         else:
             delete_query = f"""
-            PREFIX ex: <http://localhost:7200/ex#>
+            PREFIX ex: <{self.graphdb_url}/ex#>
             DELETE WHERE {{
               ex:{subject} ?p ?o .
             }}
@@ -77,7 +78,7 @@ class RDFClient:
         This is just a simplified example, might need more robust logic in production.
         """
         update_query = f"""
-        PREFIX ex: <http://localhost:7200/ex#>
+        PREFIX ex: <{self.graphdb_url}/ex#>
         DELETE {{
           ex:{subject} ex:{old_predicate} ?o .
         }}

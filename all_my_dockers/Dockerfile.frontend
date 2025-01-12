@@ -1,0 +1,31 @@
+# Dockerfile.frontend
+
+# Base image for building the Next.js app
+FROM node:18 as builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and install dependencies
+COPY ../frontend/la-roche-posay-app/package.json .
+COPY ../frontend/la-roche-posay-app/package-lock.json .
+RUN npm install
+
+# Copy the rest of the application
+COPY ../frontend/la-roche-posay-app .
+
+
+# Base image for serving the Next.js app
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy the build from the builder stage
+COPY --from=builder /app/ .
+
+# Expose port
+EXPOSE 3000
+
+# Command to run the application
+CMD ["npm", "run", "dev"]

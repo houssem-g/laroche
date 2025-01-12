@@ -16,3 +16,7 @@ class ItemCreate(StrictBaseModel):
 class ItemUpdate(StrictBaseModel):
     old_predicate: str
     new_predicate: str
+
+class QARequest(StrictBaseModel):
+    user_query: str
+

@@ -19,7 +19,7 @@ const Body: React.FC = () => {
     setResponse('')
 
     try {
-      const res = await fetch(`http://localhost:8000/qa/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/qa/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ const Body: React.FC = () => {
         const errorData = await res.json()
         throw new Error(errorData.detail || 'Quelque chose s\'est mal passé')
       }
-
+      console.log("****************res*****************", res)
       const data: QAResponse = await res.json()
       setResponse(data.response["content"])
     } catch (err: any) {

@@ -3,26 +3,22 @@
 from fastapi import APIRouter, HTTPException
 from app.database.rdf_client import RDFClient
 from app.services.chatgpt import ChatGPTClient
-from pydantic import BaseModel
+from app.schemas.item import QARequest
+from app.config import settings
 
 router = APIRouter(prefix="/qa", tags=["Q&A"])
 
 rdf_client = RDFClient()
 chatgpt_client = ChatGPTClient()
 
-
-class QARequest(BaseModel):
-    user_query: str
-
-
 @router.post("/")
 def ask_question(payload: QARequest):
     user_query = payload.user_query.strip()
     if not user_query:
         raise HTTPException(status_code=400, detail="La requête ne peut pas être vide.")
-    
+    graphdb_url = settings.GRAPHDB_URL
     sparql_query = f"""
-    PREFIX ex: <http://localhost:7200/ex#>
+    PREFIX ex: <{graphdb_url}/ex#>
     SELECT ?p ?o
     WHERE {{
       ?s ?p ?o .

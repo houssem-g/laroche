@@ -15,6 +15,7 @@ load_dotenv(dotenv_path=env_path)
 class Settings:
     GRAPHDB_URL_SELECT: str = os.getenv("GRAPHDB_URL_SELECT", "")
     GRAPHDB_URL_UPDATE: str = os.getenv("GRAPHDB_URL_UPDATE", "")
+    GRAPHDB_URL: str = os.getenv("GRAPHDB_URL", "")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
 
 
