@@ -21,7 +21,7 @@ services:
     ports:
       - '8000:8000'
     environment:
-      - RDF_ENDPOINT=http://graphdb:7200/  # Use graphdb service name here
+      - RDF_ENDPOINT=http://graphdb:7200/
     depends_on:
       - graphdb
     networks:
@@ -31,7 +31,7 @@ services:
     image: ontotext/graphdb:10.6.4
     container_name: graphdb
     ports:
-      - '7200:7200'  # Exposes GraphDB UI on localhost:7200
+      - '7200:7200'
     environment:
       - GRAPHDB_HOME=/opt/graphdb/home
       - JAVA_OPTS=-Xmx4g -Xms2g

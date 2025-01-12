@@ -31,7 +31,6 @@ const Body: React.FC = () => {
         const errorData = await res.json()
         throw new Error(errorData.detail || 'Quelque chose s\'est mal passé')
       }
-      console.log("****************res*****************", res)
       const data: QAResponse = await res.json()
       setResponse(data.response["content"])
     } catch (err: any) {
@@ -44,7 +43,7 @@ const Body: React.FC = () => {
   return (
     <main className="flex-grow bg-la-roche-posay-gray p-4">
       <div className="max-w-2xl mx-auto bg-la-roche-posay-white p-6 rounded shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Posez votre question</h2>
+        <h2 className="text-xl font-semibold mb-4">Ask your question</h2>
         <form onSubmit={handleSubmit}>
           <textarea
             className="w-full p-2 border border-la-roche-posay-blue rounded mb-4 focus:outline-none focus:ring-2 focus:ring-la-roche-posay-blue"
@@ -59,7 +58,7 @@ const Body: React.FC = () => {
             className="w-full bg-la-roche-posay-blue text-la-roche-posay-white py-2 px-4 rounded hover:bg-la-roche-posay-dark-blue transition duration-200 disabled:opacity-50"
             disabled={loading}
           >
-            {loading ? 'Envoi...' : 'Envoyer'}
+            {loading ? 'Sending...' : 'Send'}
           </button>
         </form>
         {error && (
@@ -69,7 +68,7 @@ const Body: React.FC = () => {
         )}
         {response && (
           <div className="mt-4 p-4 bg-la-roche-posay-gray text-la-roche-posay-blue rounded">
-            <h3 className="text-lg font-semibold mb-2">Résultat :</h3>
+            <h3 className="text-lg font-semibold mb-2">Result :</h3>
             <p>{response}</p>
           </div>
         )}

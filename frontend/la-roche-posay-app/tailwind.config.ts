@@ -13,11 +13,10 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        'la-roche-posay-blue': '#005A9C',       // Bleu principal
-        'la-roche-posay-white': '#FFFFFF',      // Blanc
-        'la-roche-posay-gray': '#F5F5F5',       // Gris clair
-        'la-roche-posay-dark-blue': '#003366',  // Bleu foncé
-        // Ajoutez d'autres couleurs spécifiques si nécessaire
+        'la-roche-posay-blue': '#005A9C',
+        'la-roche-posay-white': '#FFFFFF',
+        'la-roche-posay-gray': '#F5F5F5',
+        'la-roche-posay-dark-blue': '#003366',
       },
     },
   },

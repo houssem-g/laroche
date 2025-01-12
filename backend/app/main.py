@@ -16,7 +16,6 @@ def create_app() -> FastAPI:
         description="Une application démontrant l'intégration de FastAPI, GraphDB, et ChatGPT."
     )
 
-    # Configurer CORS
     origins = [
         "http://localhost:3000",
         "http://backend:8000",
@@ -32,10 +31,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Monter le dossier static
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-    # Middleware de logging
     @app.middleware("http")
     async def log_requests(request: Request, call_next):
         logger.info(f"Incoming request: {request.method} {request.url}")
@@ -51,11 +48,9 @@ def create_app() -> FastAPI:
                 content={"detail": "Internal Server Error"},
             )
 
-    # Inclure les routeurs
     app.include_router(items.router)
     app.include_router(qa.router)
     
-    # Endpoint pour la page d'accueil (optionnel)
     @app.get("/", response_class=HTMLResponse)
     def read_root():
         with open("app/static/index.html") as f:
