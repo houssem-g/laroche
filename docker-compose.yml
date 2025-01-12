@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./frontend/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    environment:
+      - RDF_ENDPOINT=http://localhost:7200/
+      # Remplacez "your-repository-name" par le nom de votre dépôt GraphDB
+    depends_on:
+      - graphdb
+    networks:
+      - app-network
+
+  graphdb:
+    image: ontotext/graphdb:10.6.4
+    container_name: graphdb
+    ports:
+      - '7200:7200'  # Port de l'interface utilisateur de GraphDB
+    environment:
+      - GRAPHDB_HOME=/opt/graphdb/home
+      - JAVA_OPTS=-Xmx4g -Xms2g  # Ajustez la mémoire selon vos besoins
+    volumes:
+      - graphdb-data:/opt/graphdb/home
+      - ./graphdb/config:/opt/graphdb/home/config  # Pour les configurations personnalisées
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  graphdb-data:
